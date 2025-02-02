@@ -1,135 +1,89 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import {RewardsManager} from "../../../src/RewardsManager.sol";
 import {Properties} from "../Properties.sol";
+import {Setup} from "../Setup.sol";
 import {BaseTargetFunctions} from "@chimera/BaseTargetFunctions.sol";
-import {Authorization, Signature} from "src/interfaces/IMorpho.sol";
 
 
-abstract contract MorphoTargets is BaseTargetFunctions, Properties {
-    /**
-     * ADMIN FUNCTIONS
-     */
-    function morpho_createMarket() public asAdmin withMarketParams {
-        morpho.createMarket(marketParams);
+abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
+    function rewardsManager_accrueUser(uint256 epochId) public asActor {
+        rewardsManager.accrueUser(epochId, vault, actor);
     }
 
-    function morpho_accrueInterest() public withMarketParams {
-        morpho.accrueInterest(marketParams);
+    function rewardsManager_accrueVault(uint256 epochId) public asActor {
+        rewardsManager.accrueVault(epochId, vault);
+
     }
 
-    function morpho_enableIrm() public asAdmin {
-        morpho.enableIrm(address(irm));
+    function rewardsManager_addBulkRewards(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
+        rewardsManager.addBulkRewards(epochStart, epochEnd, vault, address(token), amounts);
+        t(false, "addBulkRewards");
     }
 
-    function morpho_enableLltv(uint256 _lltv) public asAdmin {
-        morpho.enableLltv(_lltv);
-        lltv = _lltv;
+    function rewardsManager_addBulkRewards_clamped(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
+        uint256 totalEpochs;
+        unchecked {
+            totalEpochs = epochEnd - epochStart + 1;
+        }
+        uint256[] memory clampedAmounts = new uint256[](totalEpochs);
+        for (uint256 i = 0; i < totalEpochs; i++) {
+            clampedAmounts[i] = amounts[i];
+        }
+        rewardsManager_addBulkRewards(epochStart, epochEnd, clampedAmounts);
+        t(false, "addBulkRewards");
     }
 
-    function morpho_setFee(uint256 newFee) public withMarketParams asAdmin {
-        morpho.setFee(marketParams, newFee);
+    function rewardsManager_addBulkRewardsLinearly(uint256 epochStart, uint256 epochEnd, uint256 total) public asActor {
+        rewardsManager.addBulkRewardsLinearly(epochStart, epochEnd, vault, address(token), total);
     }
 
-    function morpho_setFeeRecipient(address newFeeRecipient) public asAdmin {
-        morpho.setFeeRecipient(newFeeRecipient);
+    function rewardsManager_addReward(uint256 epochId, uint256 amount) public asActor {
+        rewardsManager.addReward(epochId, vault, address(token), amount);
     }
 
-    function morpho_setOwner(address newOwner) public asAdmin stateless {
-        morpho.setOwner(newOwner);
+    function rewardsManager_claimBulkTokensOverMultipleEpochs(uint256 epochStart, uint256 epochEnd) public asActor {
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(token);
+        rewardsManager.claimBulkTokensOverMultipleEpochs(epochStart, epochEnd, vault, tokens, actor);
     }
 
-    /*
-     * ACTOR FUNCTIONS
-     */
-    function morpho_supply(uint256 assets, uint256 shares) public asActor withMarketParams {
-        morpho.supply(marketParams, assets, shares, actor, hex"");
+    function rewardsManager_claimReward(uint256 epochId) public asActor {
+        rewardsManager.claimReward(epochId, vault, address(token), actor);
     }
 
-    function morpho_supply_clamped_assets(uint256 assets) public {
-        morpho_supply(assets, 0);
+    function rewardsManager_claimRewardEmitting(uint256 epochId) public asActor {
+        rewardsManager.claimRewardEmitting(epochId, vault, address(token), actor);
     }
 
-    function morpho_supply_clamped_shares(uint256 shares) public {
-        morpho_supply(0, shares);
+    function rewardsManager_claimRewardReferenceEmitting(uint256 epochId) public asActor {
+        rewardsManager.claimRewardReferenceEmitting(epochId, vault, address(token), actor);
     }
 
-    function morpho_supplyCollateral(uint256 assets) public asActor withMarketParams {
-        morpho.supplyCollateral(marketParams, assets, actor, hex"");
+    function rewardsManager_claimRewards(uint256 epochId) public asActor {
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(token);
+        address[] memory users;
+        users[0] = actor;
+        address[] memory vaults;
+        vaults[0] = vault;
+        uint256[] memory epochsToClaim;
+        epochsToClaim[0] = epochId;
+        rewardsManager.claimRewards(epochsToClaim, vaults, tokens, users);
     }
 
-    function morpho_withdraw(uint256 assets, uint256 shares) public asActor withMarketParams {
-        morpho.withdraw(marketParams, assets, shares, actor, actor);
+    function rewardsManager_notifyTransfer(address from, address to, uint256 amount) public asActor {
+        rewardsManager.notifyTransfer(from, to, amount);
     }
 
-    function morpho_withdraw_clamped_assets(uint256 assets) public {
-        morpho_withdraw(assets, 0);
+    function rewardsManager_reap(RewardsManager.OptimizedClaimParams memory params) public asActor {
+        rewardsManager.reap(params);
+        t(false, "reap");
     }
 
-    function morpho_withdraw_clamped_shares(uint256 shares) public {
-        morpho_withdraw(0, shares);
-    }
-
-    function morpho_withdrawCollateral(uint256 assets) public asActor withMarketParams {
-        morpho.withdrawCollateral(marketParams, assets, actor, actor);
-    }
-
-    function morpho_borrow(uint256 assets, uint256 shares) public asActor withMarketParams {
-        morpho.borrow(marketParams, assets, shares, actor, actor);
-    }
-
-    function morpho_borrow_clamped_assets(uint256 assets) public {
-        morpho_borrow(assets, 0);
-    }
-
-    function morpho_borrow_clamped_shares(uint256 shares) public {
-        morpho_borrow(0, shares);
-    }
-
-    function morpho_repay(uint256 assets, uint256 shares) public asActor withMarketParams {
-        morpho.repay(marketParams, assets, shares, actor, hex"");
-    }
-
-    function morpho_repay_clamped_assets(uint256 assets) public {
-        morpho_repay(assets, 0);
-    }
-
-    function morpho_repay_clamped_shares(uint256 shares) public {
-        morpho_repay(0, shares);
-    }
-
-    function morpho_setAuthorization(address authorized, bool newIsAuthorized) public asActor {
-        morpho.setAuthorization(authorized, newIsAuthorized);
-    }
-
-    function morpho_setAuthorizationWithSig(Authorization memory authorization, Signature memory signature) public asActor {
-        morpho.setAuthorizationWithSig(authorization, signature);
-    }
-
-    function morpho_flashLoan(uint256 assets) public asActor {
-        morpho.flashLoan(address(loan), assets, hex"11");
-    }
-
-    function morpho_liquidate(address borrower, uint256 seizedAssets, uint256 repaidShares) public asActor withMarketParams {
-        morpho.liquidate(marketParams, borrower, seizedAssets, repaidShares, hex"");
-    }
-
-
-    function morpho_liquidate_clamped_assets(uint256 seed, uint256 seizedAssets) public {
-        address borrower = _getRandomUser(seed);
-        morpho_liquidate(borrower, seizedAssets, 0);
-    }
-
-    function morpho_liquidate_clamped_shares(uint256 seed, uint256 repaidShares) public {
-        address borrower = _getRandomUser(seed);
-        morpho_liquidate(borrower, 0, repaidShares);
-    }
-
-    function morpho_liquidate_doomsday(uint256 seed) public stateless {
-        address borrower = _getRandomUser(seed);
-        (,uint256 borrowShares, uint256 collateral) = morpho.position(_getMarketId(), borrower);
-        precondition(borrowShares > 0);
-        oracle.setPrice(1);
-        morpho_liquidate(borrower, collateral, 0);
+    function rewardsManager_tear(RewardsManager.OptimizedClaimParams memory params) public asActor {
+        rewardsManager.tear(params);
+        t(false, "tear");
     }
 }

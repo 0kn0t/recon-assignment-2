@@ -1,4 +1,3 @@
-
 testMode: "assertion"
 prefix: "invariant_"
 coverage: true
@@ -10,3 +9,5 @@ cryticArgs: ["--foundry-compile-all"]
 deployer: "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496"
 contractAddr: "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496"
 shrinkLimit: 100000
+testLimit: 500000
+format: "text"
