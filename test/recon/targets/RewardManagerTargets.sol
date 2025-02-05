@@ -19,7 +19,6 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
 
     function rewardsManager_addBulkRewards(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
         rewardsManager.addBulkRewards(epochStart, epochEnd, vault, address(token), amounts);
-        t(false, "addBulkRewards");
     }
 
     function rewardsManager_addBulkRewards_clamped(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
@@ -32,7 +31,6 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
             clampedAmounts[i] = amounts[i];
         }
         rewardsManager_addBulkRewards(epochStart, epochEnd, clampedAmounts);
-        t(false, "addBulkRewards");
     }
 
     function rewardsManager_addBulkRewardsLinearly(uint256 epochStart, uint256 epochEnd, uint256 total) public asActor {
@@ -79,11 +77,9 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
 
     function rewardsManager_reap(RewardsManager.OptimizedClaimParams memory params) public asActor {
         rewardsManager.reap(params);
-        t(false, "reap");
     }
 
     function rewardsManager_tear(RewardsManager.OptimizedClaimParams memory params) public asActor {
         rewardsManager.tear(params);
-        t(false, "tear");
     }
 }
