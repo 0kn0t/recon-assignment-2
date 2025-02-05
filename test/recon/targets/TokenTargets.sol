@@ -11,7 +11,7 @@ abstract contract TokenTargets is BaseTargetFunctions, Properties {
         token.approve(spender, amount);
     }
 
-    function token_mint(address _to, uint256 _amount) public asActor {
+    function token_mint(address _to, uint256 _amount) public asAdmin {
         token.mint(_to, _amount);
     }
 

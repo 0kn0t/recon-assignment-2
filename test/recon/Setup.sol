@@ -28,6 +28,11 @@ abstract contract Setup is BaseSetup {
 
     address internal vault = address(0x1337);
 
+    modifier asAdmin {
+        vm.prank(address(this));
+        _;
+    }
+
     modifier asActor {
         vm.prank(actor);
         _;
