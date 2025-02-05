@@ -62,11 +62,11 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
     function rewardsManager_claimRewards(uint256 epochId) public asActor {
         address[] memory tokens = new address[](1);
         tokens[0] = address(token);
-        address[] memory users;
+        address[] memory users = new address[](1);
         users[0] = actor;
-        address[] memory vaults;
+        address[] memory vaults = new address[](1);
         vaults[0] = vault;
-        uint256[] memory epochsToClaim;
+        uint256[] memory epochsToClaim = new uint256[](1);
         epochsToClaim[0] = epochId;
         rewardsManager.claimRewards(epochsToClaim, vaults, tokens, users);
     }
