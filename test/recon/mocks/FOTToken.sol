@@ -16,10 +16,14 @@ contract FOTToken is ERC20 {
     function _update(address from, address to, uint256 value) internal override {
         require(to != address(0), "Transfer to zero address");
 
-        uint256 feeAmount = (value * feePercentage) / 10000;
-        uint256 transferAmount = value - feeAmount;
+        if (from == address(0)) {
+            super._update(from, to, value);
+        } else {
+            uint256 feeAmount = (value * feePercentage) / 10000;
+            uint256 transferAmount = value - feeAmount;
 
-        super._transfer(from, feeRecipient, feeAmount);
-        super._transfer(from, to, transferAmount);
+            super._transfer(from, feeRecipient, feeAmount);
+            super._transfer(from, to, transferAmount);
+        }
     }
 }
