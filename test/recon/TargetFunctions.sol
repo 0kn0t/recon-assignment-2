@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 pragma solidity ^0.8.0;
 
+import {vm} from "@chimera/Hevm.sol";
 import {Setup} from "./Setup.sol";
 import {RewardManagerTargets} from "./targets/RewardManagerTargets.sol";
 import {TokenTargets} from "./targets/TokenTargets.sol";
@@ -16,5 +17,9 @@ abstract contract TargetFunctions is RewardManagerTargets, TokenTargets {
 
     function switch_vault(uint256 seed) public asActor {
         _switchVault(seed);
+    }
+
+    function changeTime(uint256 time) public {
+        vm.warp(time);
     }
 }

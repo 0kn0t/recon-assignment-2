@@ -2,10 +2,10 @@
 pragma solidity 0.8.24;
 
 
+import "../lib/chimera/src/CryticAsserts.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/utils/ReentrancyGuard.sol";
-
+import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 
 /// @title RewardsManager
 /// @author Alex the Entreprenerd @ BadgerDAO
@@ -49,8 +49,8 @@ import {ReentrancyGuard} from "@openzeppelin/utils/ReentrancyGuard.sol";
 /// CONCLUSION
 /// Given the points, knowing the rewards amounts to distribute, you know how to split them at the end of each epoch
 
-contract RewardsManager is ReentrancyGuard {
-    
+contract RewardsManager is ReentrancyGuard, CryticAsserts {
+
     using SafeERC20 for IERC20;
 
     // NOTE: Must be `immutable`, remove `immutable` for coverage report
@@ -170,6 +170,7 @@ contract RewardsManager is ReentrancyGuard {
         } else {
             _handleTransfer(msg.sender, from, to, amount);
         }
+        t(false, "AAA");
 
         emit Transfer(msg.sender, from, to, amount);
     }
