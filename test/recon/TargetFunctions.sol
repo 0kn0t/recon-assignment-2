@@ -10,27 +10,11 @@ abstract contract TargetFunctions is RewardManagerTargets, TokenTargets {
         _switchActor(seed);
     }
 
-    function switchToOZ() public asActor {
-        _switchToOZ();
+    function switch_token(uint256 seed) public asActor {
+        _switchToken(seed);
     }
 
-    function switchToSLMT() public asActor {
-        _switchToSLMT();
-    }
-
-    function switchToSLDY() public asActor {
-        _switchToSLDY();
-    }
-
-    function switchToFOT() public asActor {
-        _switchToFOT();
-    }
-
-    function switchToUSDT() public asActor {
-        _switchToUSDT();
-    }
-
-    function switchToStETH() public asActor {
-        _switchToStETH();
+    function switch_vault(uint256 seed) public asActor {
+        _switchVault(seed);
     }
 }

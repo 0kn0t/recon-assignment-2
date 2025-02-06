@@ -10,11 +10,12 @@ import {BaseTargetFunctions} from "@chimera/BaseTargetFunctions.sol";
 abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
     function rewardsManager_accrueUser(uint256 epochId) public asActor {
         rewardsManager.accrueUser(epochId, vault, actor);
+        t(false, "11");
     }
 
     function rewardsManager_accrueVault(uint256 epochId) public asActor {
         rewardsManager.accrueVault(epochId, vault);
-
+        t(false, "22");
     }
 
     function rewardsManager_addBulkRewards(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
