@@ -19,7 +19,7 @@ abstract contract TargetFunctions is RewardManagerTargets, TokenTargets {
         _switchVault(seed);
     }
 
-    function changeTime(uint256 time) public {
+    function changeTime(uint32 time) public {
         vm.warp(time);
     }
 }

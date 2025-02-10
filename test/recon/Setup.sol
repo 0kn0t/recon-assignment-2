@@ -13,8 +13,11 @@ abstract contract Setup is BaseSetup, ActorManager, TokenManager, VaultManager {
 
     function setup() internal virtual override {
         _setupActors();
-        _setupTokens();
         _setupVaults();
+
+        address[] memory approveTo = new address[](1);
+        approveTo[0] = address(rewardsManager);
+        _setupTokens(users, vaults, approveTo);
         rewardsManager = new RewardsManager();
     }
 }

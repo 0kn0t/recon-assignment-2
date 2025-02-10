@@ -12,6 +12,6 @@ contract CryticToFoundry is Test, TargetFunctions, FoundryAsserts {
 
     function test_crytic() public {
         // TODO: add failing property tests here for debugging
-        console.log("111");
+        console.log(address(rewardsManager));
     }
 }

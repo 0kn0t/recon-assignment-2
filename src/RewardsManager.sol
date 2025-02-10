@@ -170,8 +170,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         } else {
             _handleTransfer(msg.sender, from, to, amount);
         }
-        t(false, "AAA");
-
         emit Transfer(msg.sender, from, to, amount);
     }
 
@@ -184,14 +182,12 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         accrueUser(cachedCurrentEpoch, vault, to);
         // We have to accrue vault as totalSupply is gonna change
         accrueVault(cachedCurrentEpoch, vault);
-
         unchecked {
             // Add deposit data for user
             shares[cachedCurrentEpoch][vault][to] += amount;
         }
         // And total shares for epoch // Remove unchecked per QSP-5
         totalSupply[cachedCurrentEpoch][vault] += amount;
-
     }
 
     /// @dev handles a withdraw for vault, from address of amount
@@ -209,7 +205,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         shares[cachedCurrentEpoch][vault][from] -= amount;
         // Reduce totalSupply
         totalSupply[cachedCurrentEpoch][vault] -= amount;
-
     }
 
     /// @dev handles a transfer for vault, from address to address of amount
@@ -245,7 +240,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
     /// @param vault - the vault to accrue
     function accrueVault(uint256 epochId, address vault) public {
         require(epochId <= currentEpoch(), "Cannot see the future");
-
         (uint256 supply, bool shouldUpdate) = _getTotalSupplyAtEpoch(epochId, vault);
 
         if(shouldUpdate) {
@@ -556,6 +550,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
                 ++i;
             }
         }
+        t(false,"claimRewards");
     }
     
     /// @dev Claim one Token Reward for a specific epoch, vault and user
@@ -582,6 +577,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         if(pointsLeft == 0){
             return;
         }
+                             t(false,"claimRewardReferenceEmitting");
 
         // Get amounts to divide over
         uint256 vaultTotalPoints = totalPoints[epochId][vault];
@@ -625,6 +621,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         if (userInfo.userEpochTotalPoints == 0) {
             return; // Nothing to claim
         }
+        t(false,"claimRewardEmitting");
 
         (uint256 vaultSupplyAtEpochId, ) = _getTotalSupplyAtEpoch(epochId, vault);
         (uint256 startingContractBalance, ) = _getBalanceAtEpoch(epochId, vault, address(this));
@@ -843,6 +840,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         uint256 startBalance = IERC20(token).balanceOf(address(this));  
         IERC20(token).safeTransferFrom(msg.sender, address(this), total);
         uint256 endBalance = IERC20(token).balanceOf(address(this));
+        t(false,"addBulkRewards");
 
         require(endBalance - startBalance == total, "no feeOnTransfer");
 

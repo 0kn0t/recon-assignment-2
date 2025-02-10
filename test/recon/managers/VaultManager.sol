@@ -8,7 +8,7 @@ abstract contract VaultManager {
     address internal vault4 = address(0x133A);
     address[] internal vaults;
 
-    address internal vault;
+    address internal vault = vault1;
 
     function _setupVaults() internal {
         vaults.push(vault1);
