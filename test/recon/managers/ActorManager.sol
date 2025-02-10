@@ -9,7 +9,7 @@ abstract contract ActorManager {
     address internal user3 = 0xc0A55e2205B289a967823662B841Bd67Aa362Aec;
     address[] internal users;
 
-    address internal actor;
+    address internal actor = address(this);
 
     modifier asAdmin {
         vm.prank(address(this));

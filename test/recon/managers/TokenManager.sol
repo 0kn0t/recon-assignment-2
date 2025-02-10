@@ -38,7 +38,6 @@ abstract contract TokenManager {
         tokens.push(address(_oz));
         tokens.push(address(_fot));
 
-        _mintTo(address(this), 1000 ether);
         token = address(_oz);
 
         for (uint i; i < tokens.length; i++) {
@@ -46,6 +45,9 @@ abstract contract TokenManager {
                 _approveForAllActors(token, actors, approveTo[i]);
                 _approveForAllActors(token, vaults, approveTo[i]);
             }
+        }
+        for (uint256 i; i < actors.length; i++) {
+            _mintTo(actors[i], 1000 ether);
         }
     }
 

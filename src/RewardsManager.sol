@@ -550,7 +550,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
                 ++i;
             }
         }
-        t(false,"claimRewards");
     }
     
     /// @dev Claim one Token Reward for a specific epoch, vault and user
@@ -577,7 +576,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         if(pointsLeft == 0){
             return;
         }
-                             t(false,"claimRewardReferenceEmitting");
+        t(false,"claimRewardReferenceEmitting");
 
         // Get amounts to divide over
         uint256 vaultTotalPoints = totalPoints[epochId][vault];
@@ -840,7 +839,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         uint256 startBalance = IERC20(token).balanceOf(address(this));  
         IERC20(token).safeTransferFrom(msg.sender, address(this), total);
         uint256 endBalance = IERC20(token).balanceOf(address(this));
-        t(false,"addBulkRewards");
 
         require(endBalance - startBalance == total, "no feeOnTransfer");
 
