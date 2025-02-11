@@ -145,15 +145,15 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
         rewardsManager.notifyTransfer(from, to, amount);
     }
 
-    function rewardsManager_notifyTransfer_clamped1(uint256 amount) public {
+    function rewardsManager_notifyTransfer_clamped_deposit(uint256 amount) public {
         rewardsManager_notifyTransfer(address(0), actor, amount);
     }
 
-    function rewardsManager_notifyTransfer_clamped2(uint256 amount) public {
+    function rewardsManager_notifyTransfer_clamped_withdraw(uint256 amount) public {
         rewardsManager_notifyTransfer(actor, address(0), amount);
     }
 
-    function rewardsManager_notifyTransfer_clamped3(uint256 amount, uint256 seed) public {
+    function rewardsManager_notifyTransfer_clamped_transfer(uint256 amount, uint256 seed) public {
         address to = _getRandomUser(seed);
         rewardsManager_notifyTransfer(actor, to, amount);
     }
