@@ -19,4 +19,10 @@ contract CryticToFoundry is Test, TargetFunctions, FoundryAsserts {
         changeEpoch(2);
         rewardsManager_claimRewardReferenceEmitting(1, actor);
     }
+
+    function test_crytic() public {
+        changeEpoch(0);
+        rewardsManager_notifyTransfer(address(0), address(0xdeadbeef), 1);
+        t(invariant_total_supply(), "ooo");
+    }
 }
