@@ -11,16 +11,6 @@ abstract contract ActorManager {
 
     address internal actor = address(this);
 
-    modifier asAdmin {
-        vm.prank(address(this));
-        _;
-    }
-
-    modifier asActor {
-        vm.prank(actor);
-        _;
-    }
-
     function _setupActors() internal {
         users.push(user1);
         users.push(user2);

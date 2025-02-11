@@ -18,7 +18,8 @@ abstract contract TargetFunctions is RewardManagerTargets {
         _switchVault(seed);
     }
 
-    function changeTime(uint32 time) public {
-        vm.warp(time);
+    function changeEpoch(uint256 epochNumber) public {
+        currentEpoch = epochNumber + 1;
+        vm.warp(rewardsManager.DEPLOY_TIME() + epochNumber * rewardsManager.SECONDS_PER_EPOCH());
     }
 }

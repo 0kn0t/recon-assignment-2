@@ -15,25 +15,71 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
         rewardsManager.accrueUser(epochId, vault, actor);
     }
 
+    function rewardsManager_accrueUser_clamped(uint256 epochId) public {
+        epochId %= currentEpoch;
+        rewardsManager_accrueUser(epochId);
+    }
+
     function rewardsManager_accrueVault(uint256 epochId) public asActor {
         rewardsManager.accrueVault(epochId, vault);
     }
 
+    function rewardsManager_accrueVault_clamped(uint256 epochId) public {
+        epochId %= currentEpoch;
+        rewardsManager_accrueVault(epochId);
+    }
+
     function rewardsManager_addBulkRewards(uint256 epochStart, uint256 epochEnd, uint256[] memory amounts) public asActor {
         rewardsManager.addBulkRewards(epochStart, epochEnd, vault, token, amounts);
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] > 0) {
+                if (epochEnd > maxEpoch) {
+                    maxEpoch = epochEnd;
+                }
+                if (epochStart < minEpoch) {
+                    minEpoch = epochStart;
+                }
+            }
+        }
     }
 
     function rewardsManager_addBulkRewards_clamped(uint256 epochStart, uint256[] memory amounts) public {
         uint epochEnd = epochStart + amounts.length - 1;
         rewardsManager_addBulkRewards(epochStart, epochEnd, amounts);
+        for (uint256 i = 0; i < amounts.length; i++) {
+            if (amounts[i] > 0) {
+                if (epochStart + i > maxEpoch) {
+                    maxEpoch = epochStart + i;
+                }
+                if (epochStart + i < minEpoch) {
+                    minEpoch = epochStart + i;
+                }
+            }
+        }
     }
 
     function rewardsManager_addBulkRewardsLinearly(uint256 epochStart, uint256 epochEnd, uint256 total) public asActor {
         rewardsManager.addBulkRewardsLinearly(epochStart, epochEnd, vault, token, total);
+        if (total > 0) {
+            if (epochEnd > maxEpoch) {
+                maxEpoch = epochEnd;
+            }
+            if (epochStart < minEpoch) {
+                minEpoch = epochStart;
+            }
+        }
     }
 
     function rewardsManager_addReward(uint256 epochId, uint256 amount) public asActor {
         rewardsManager.addReward(epochId, vault, token, amount);
+        if (amount > 0) {
+            if (epochId > maxEpoch) {
+                maxEpoch = epochId;
+            }
+            if (epochId < minEpoch) {
+                minEpoch = epochId;
+            }
+        }
     }
 
     function rewardsManager_claimBulkTokensOverMultipleEpochs(uint256 epochStart, uint256 epochEnd, address[] memory tokens, address actor) public asActor {
@@ -41,8 +87,8 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
     }
 
     function rewardsManager_claimBulkTokensOverMultipleEpochs_clamped(uint256 epochStart, uint256 epochEnd, uint8 seed) public {
-        epochStart = between(epochStart, 0, rewardsManager.currentEpoch());
-        epochEnd = between(epochEnd, epochStart, rewardsManager.currentEpoch());
+        epochStart = between(epochStart, minEpoch, maxEpoch);
+        epochEnd = between(epochEnd, epochStart, maxEpoch);
         uint256 length = seed % tokens.length;
         address[] memory tokens = new address[](length);
         for (uint256 i = 0; i < length; i++) {
@@ -62,6 +108,12 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
 
     function rewardsManager_claimRewardReferenceEmitting(uint256 epochId, address actor) public asActor {
         rewardsManager.claimRewardReferenceEmitting(epochId, vault, token, actor);
+    }
+
+    function rewardsManager_claimRewardReferenceEmitting_clamped(uint256 epochId, uint256 seed) public {
+        epochId = between(epochId, minEpoch, maxEpoch);
+        address actor = _getRandomUser(seed);
+        rewardsManager_claimRewardReferenceEmitting(epochId, actor);
     }
 
     function rewardsManager_claimRewards(uint256[] memory epochsToClaim, address[] memory vaults, address[] memory tokens, address[] memory users) public asActor {
@@ -89,14 +141,21 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
         rewardsManager_claimRewards(toClaim, vaults, tokens, users);
     }
 
-    function rewardsManager_notifyTransfer(address from, address to, uint256 amount) public asActor {
+    function rewardsManager_notifyTransfer(address from, address to, uint256 amount) public asVault {
         rewardsManager.notifyTransfer(from, to, amount);
     }
 
-    function rewardsManager_notifyTransfer_clamped(uint256 amount, uint256 seed1, uint256 seed2) public {
-        address from = _getRandomUser(seed1);
-        address to = _getRandomUser(seed2);
-        rewardsManager_notifyTransfer(from, to, amount);
+    function rewardsManager_notifyTransfer_clamped1(uint256 amount) public {
+        rewardsManager_notifyTransfer(address(0), actor, amount);
+    }
+
+    function rewardsManager_notifyTransfer_clamped2(uint256 amount) public {
+        rewardsManager_notifyTransfer(actor, address(0), amount);
+    }
+
+    function rewardsManager_notifyTransfer_clamped3(uint256 amount, uint256 seed) public {
+        address to = _getRandomUser(seed);
+        rewardsManager_notifyTransfer(actor, to, amount);
     }
 
     function rewardsManager_reap(RewardsManager.OptimizedClaimParams memory params) public asActor {
@@ -104,8 +163,8 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
     }
 
     function rewardsManager_reap_clamped(uint256 epochStart, uint256 epochEnd, uint8 seed) public {
-        epochStart = between(epochStart, 0, rewardsManager.currentEpoch());
-        epochEnd = between(epochEnd, epochStart, rewardsManager.currentEpoch());
+        epochStart = between(epochStart, minEpoch, maxEpoch);
+        epochEnd = between(epochEnd, epochStart, maxEpoch);
         uint256 length = seed % tokens.length;
         address[] memory tokens = new address[](length);
         for (uint256 i = 0; i < length; i++) {
@@ -126,8 +185,8 @@ abstract contract RewardManagerTargets is BaseTargetFunctions, Properties {
 
 
     function rewardsManager_tear_clamped(uint256 epochStart, uint256 epochEnd, uint8 seed) public {
-        epochStart = between(epochStart, 0, rewardsManager.currentEpoch());
-        epochEnd = between(epochEnd, epochStart, rewardsManager.currentEpoch());
+        epochStart = between(epochStart, minEpoch, maxEpoch);
+        epochEnd = between(epochEnd, epochStart, maxEpoch);
         uint256 length = seed % tokens.length;
         address[] memory tokens = new address[](length);
         for (uint256 i = 0; i < length; i++) {

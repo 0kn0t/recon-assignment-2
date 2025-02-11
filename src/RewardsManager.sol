@@ -2,10 +2,10 @@
 pragma solidity 0.8.24;
 
 
-import "../lib/chimera/src/CryticAsserts.sol";
 import {IERC20} from "@openzeppelin/token/ERC20/IERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/utils/ReentrancyGuard.sol";
 import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/utils/ReentrancyGuard.sol";
+
 
 /// @title RewardsManager
 /// @author Alex the Entreprenerd @ BadgerDAO
@@ -49,8 +49,8 @@ import {SafeERC20} from "@openzeppelin/token/ERC20/utils/SafeERC20.sol";
 /// CONCLUSION
 /// Given the points, knowing the rewards amounts to distribute, you know how to split them at the end of each epoch
 
-contract RewardsManager is ReentrancyGuard, CryticAsserts {
-
+contract RewardsManager is ReentrancyGuard {
+    
     using SafeERC20 for IERC20;
 
     // NOTE: Must be `immutable`, remove `immutable` for coverage report
@@ -77,7 +77,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
     }
 
     mapping(uint256 => mapping(address => mapping(address => uint256))) public rewards; // rewards[epochId][vaultAddress][tokenAddress] = AMOUNT
-    mapping(uint256 => mapping(address => mapping(address => RewardInfo))) public rewardsInfo; // rewardsInfo[epochId][vaultAddress][tokenAddress] // NOTE: unused, not sure why this was setup
+    mapping(uint256 => mapping(address => mapping(address => RewardInfo))) public rewardsInfo; // rewardsInfo[epochId][vaultAddress][tokenAddress]
 
     // Last timestamp in which vault was accrued - lastAccruedTimestamp[epochId][vaultAddress]
     mapping(uint256 => mapping(address => uint256)) public lastAccruedTimestamp; 
@@ -170,6 +170,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         } else {
             _handleTransfer(msg.sender, from, to, amount);
         }
+
         emit Transfer(msg.sender, from, to, amount);
     }
 
@@ -182,12 +183,14 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         accrueUser(cachedCurrentEpoch, vault, to);
         // We have to accrue vault as totalSupply is gonna change
         accrueVault(cachedCurrentEpoch, vault);
+
         unchecked {
             // Add deposit data for user
             shares[cachedCurrentEpoch][vault][to] += amount;
         }
         // And total shares for epoch // Remove unchecked per QSP-5
         totalSupply[cachedCurrentEpoch][vault] += amount;
+
     }
 
     /// @dev handles a withdraw for vault, from address of amount
@@ -205,6 +208,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         shares[cachedCurrentEpoch][vault][from] -= amount;
         // Reduce totalSupply
         totalSupply[cachedCurrentEpoch][vault] -= amount;
+
     }
 
     /// @dev handles a transfer for vault, from address to address of amount
@@ -240,6 +244,7 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
     /// @param vault - the vault to accrue
     function accrueVault(uint256 epochId, address vault) public {
         require(epochId <= currentEpoch(), "Cannot see the future");
+
         (uint256 supply, bool shouldUpdate) = _getTotalSupplyAtEpoch(epochId, vault);
 
         if(shouldUpdate) {
@@ -576,7 +581,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         if(pointsLeft == 0){
             return;
         }
-        t(false,"claimRewardReferenceEmitting");
 
         // Get amounts to divide over
         uint256 vaultTotalPoints = totalPoints[epochId][vault];
@@ -620,7 +624,6 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
         if (userInfo.userEpochTotalPoints == 0) {
             return; // Nothing to claim
         }
-        t(false,"claimRewardEmitting");
 
         (uint256 vaultSupplyAtEpochId, ) = _getTotalSupplyAtEpoch(epochId, vault);
         (uint256 startingContractBalance, ) = _getBalanceAtEpoch(epochId, vault, address(this));
@@ -882,7 +885,50 @@ contract RewardsManager is ReentrancyGuard, CryticAsserts {
 
         unchecked {
             rewards[epochId][vault][token] += diff;
+            // TODO: Refactor all Rewards to the Struct Below
+            // TODO: Update so that adding a reward will accrue and stuff
+            // rewardsInfo[epochId][vault][token] = RewardInfo(diff, block.timestamp, 0);
         }
+
+
+        // // struct RewardInfo {
+        // //     uint256 total; // Amount of reward for this epoch
+        // //     uint256 lastAccruedTimestamp; // Last time the amount changed; 0 or value before epoch.startTimestamp means you don't need to do extra math
+        // //     uint256 pointsAtLastAccrue; // Cumulative points, where points = avgBalance * time, just like for users
+        // // }
+
+        // RewardInfo memory rewardInfo = rewardsInfo[epochId][vault][token];
+
+        // // TODO: Refactor all Rewards to the Struct Below
+        // // TODO: Update so that adding a reward will accrue and stuff
+        // if(epoch == cachedCurrentEpoch) {
+        //     // Need to deal with accrual of this epoch reward points
+
+        //     // Only if non-zero else we get huge number
+        //     if(rewardInfo.lastAccruedTimestamp == 0) {
+        //         // Compute points from start of epoch till now
+        //     } else {
+        //         // Sanitize lastAccruedTimestamp // MAYBE REMOVABLE
+        //         // And then check for time spent in epoch
+        //         // pointsAtLastAccrue += block.timestamp - lastAccruedTimestamp
+        //     }
+            
+
+        // } else {
+        //     // Just add amounts, points are zero
+                    
+
+        // // Only accrue if in this epoch, as you don't need to accrue for future epochs
+
+        // uint256 totalNewPoints = oldRewardInfo.pointsAtLastAccrue + 
+            
+        // rewardsInfo[epochId][vault][token] = RewardInfo(diff, block.timestamp, 0);
+        // }
+
+        // rewardsInfo[epochId][vault][token] = rewardInfo;
+
+
+
 
         emit AddReward(epochId, vault, token, diff, msg.sender);
     }
