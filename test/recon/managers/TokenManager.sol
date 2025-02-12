@@ -32,11 +32,17 @@ abstract contract TokenManager {
         _fot = new FOTToken();
 
         tokens.push(address(_usdt));
+        vm.label(address(_usdt), "USDT");
         tokens.push(address(_stETH));
+        vm.label(address(_stETH), "stETH");
         tokens.push(address(_slmt));
+        vm.label(address(_slmt), "SLMT");
         tokens.push(address(_sldy));
+        vm.label(address(_sldy), "SLDY");
         tokens.push(address(_oz));
+        vm.label(address(_oz), "OZ");
         tokens.push(address(_fot));
+        vm.label(address(_fot), "FOT");
 
         token = address(_oz);
 

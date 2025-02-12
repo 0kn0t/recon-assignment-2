@@ -13,8 +13,11 @@ abstract contract ActorManager {
 
     function _setupActors() internal {
         users.push(user1);
+        vm.label(user1, "user1");
         users.push(user2);
+        vm.label(user2, "user2");
         users.push(user3);
+        vm.label(user3, "user3");
     }
 
     function _getRandomUser(uint256 seed) internal view returns (address) {

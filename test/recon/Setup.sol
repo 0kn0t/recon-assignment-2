@@ -14,9 +14,9 @@ abstract contract Setup is BaseSetup, ActorManager, TokenManager, VaultManager {
 
     uint256 internal minEpoch;
     uint256 internal maxEpoch;
-    uint256 internal currentEpoch;
 
     function setup() internal virtual override {
+        vm.warp(1000);
         _setupActors();
         _setupVaults();
         rewardsManager = new RewardsManager();
