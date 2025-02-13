@@ -1,4 +1,4 @@
-testMode: "property"
+testMode: "assertion"
 prefix: "invariant_"
 coverage: true
 corpusDir: "echidna"

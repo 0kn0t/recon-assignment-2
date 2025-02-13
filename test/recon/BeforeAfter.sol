@@ -13,10 +13,9 @@ abstract contract BeforeAfter is Setup {
         uint256 actorShares;
         uint256 actorLastAccrue;
         uint256 actorPointsWithdrawn;
-        uint256 actorPointsPercentage;
-        mapping(address => uint256) usersBalances;
         uint256 currentTotalSupply;
         uint256 currentTotalPoints;
+        uint256 currentRewards;
     }
 
     Vars internal _before;
@@ -35,13 +34,9 @@ abstract contract BeforeAfter is Setup {
         vars.actorShares = rewardsManager.shares(rewardsManager.currentEpoch(), vault, actor);
         vars.actorLastAccrue = rewardsManager.lastUserAccrueTimestamp(rewardsManager.currentEpoch(), vault, actor);
         vars.actorPointsWithdrawn = rewardsManager.pointsWithdrawn(rewardsManager.currentEpoch(), vault, actor, token);
-        vars.actorPointsPercentage = vars.actorPoints * 10000 / rewardsManager.totalPoints(rewardsManager.currentEpoch(), vault);
         vars.currentTotalSupply = rewardsManager.totalSupply(rewardsManager.currentEpoch(), vault);
         vars.currentTotalPoints = rewardsManager.totalPoints(rewardsManager.currentEpoch(), vault);
-
-        for (uint8 i; i < users.length; i++) {
-            vars.usersBalances[users[i]] = IERC20(token).balanceOf(users[i]);
-        }
+        vars.currentRewards = rewardsManager.rewards(rewardsManager.currentEpoch(), vault, token);
     }
 
     function __before() internal {

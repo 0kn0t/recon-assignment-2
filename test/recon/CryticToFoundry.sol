@@ -12,12 +12,7 @@ contract CryticToFoundry is Test, TargetFunctions, FoundryAsserts {
     }
 
     function test_crytic() public {
-        rewardsManager_addReward(1, 1000);
-        rewardsManager_notifyTransfer(address(0), actor, 100);
-        rewardsManager_accrueUser(1);
-        rewardsManager_accrueVault(1);
-        changeEpoch(2);
-        rewardsManager_claimRewardReferenceEmitting(1, actor);
+        invariant_correct_receive_amount();
     }
 
     function test_crytic2() public {
